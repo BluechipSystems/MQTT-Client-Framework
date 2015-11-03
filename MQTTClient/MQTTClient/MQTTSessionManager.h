@@ -119,7 +119,8 @@ typedef NS_ENUM(int, MQTTSessionManagerState) {
    willRetainFlag:(BOOL)willRetainFlag
      withClientId:(NSString *)clientId
    securityPolicy:(MQTTSSLSecurityPolicy *)securityPolicy
-     certificates:(NSArray *)certificates;
+     certificates:(NSArray *)certificates
+persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator;
 
 /** Convenience alternative to full paramter connectTo
  * @param host see connectTo description
@@ -151,7 +152,8 @@ typedef NS_ENUM(int, MQTTSessionManagerState) {
           willMsg:(NSData *)willMsg
           willQos:(MQTTQosLevel)willQos
    willRetainFlag:(BOOL)willRetainFlag
-     withClientId:(NSString *)clientId;
+     withClientId:(NSString *)clientId
+  persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator;
 
 /** Convenience alternative to full paramter connectTo
  * @param host see connectTo description
@@ -181,7 +183,8 @@ typedef NS_ENUM(int, MQTTSessionManagerState) {
                   will:(NSData *)will
                willQos:(MQTTQosLevel)willQos
         willRetainFlag:(BOOL)willRetainFlag
-          withClientId:(NSString *)clientId;
+          withClientId:(NSString *)clientId
+persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator;
 
 /** Re-Connects to the MQTT broker using the parameters for given in the connectTo method
  */

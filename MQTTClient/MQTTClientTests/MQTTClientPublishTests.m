@@ -9,6 +9,7 @@
 #import <XCTest/XCTest.h>
 #import "MQTTClient.h"
 #import "MQTTClientTests.h"
+#import "MQTTPersistenceByCoreData.h"
 
 @interface MQTTClientPublishTests : XCTestCase <MQTTSessionDelegate>
 @property (strong, nonatomic) MQTTSession *session;
@@ -155,7 +156,7 @@
         NSLog(@"testing broker %@", broker);
         NSDictionary *parameters = BROKERS[broker];
         [self connect:parameters];
-        self.session.persistence.maxWindowSize = 256;
+        self.session.persistentCoordinator.maxWindowSize = 256;
         for (int i = 0; i < ALOT; i++) {
             NSData *data = [[NSString stringWithFormat:@"%@/%s/%d", TOPIC, __FUNCTION__, i] dataUsingEncoding:NSUTF8StringEncoding];
             NSString *topic = [NSString stringWithFormat:@"%@/%s/%d", TOPIC, __FUNCTION__, i];
@@ -574,9 +575,9 @@
                                                  runLoop:[NSRunLoop currentRunLoop]
                                                  forMode:NSRunLoopCommonModes
                                           securityPolicy:[self securityPolicy:parameters]
-                                            certificates:[self clientCerts:parameters]];
+                                            certificates:[self clientCerts:parameters]
+                                            persistentCoordinator:[MQTTPersistenceByCoreData new]];
     self.session.delegate = self;
-    self.session.persistence.persistent = PERSISTENT;
 
     self.event = -1;
 

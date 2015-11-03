@@ -6,18 +6,70 @@
 //  Copyright (c) 2015 Christoph Krey. All rights reserved.
 //
 
-#import "MQTTPersistence.h"
+#import "MQTTPersistenceByCoreData.h"
 
-@implementation MQTTFlow
+@interface MQTTFlowCDObject : NSManagedObject <MQTTFlow>
+
+@property (nonatomic, strong) NSNumber *commandTypeValue;
+@property (nonatomic, strong) NSNumber *incomingFlagValue;
+@property (nonatomic, strong) NSNumber *retainedFlagValue;
+@property (nonatomic, strong) NSNumber *messageIdValue;
+
+@end
+
+
+@implementation MQTTFlowCDObject
+
 @dynamic clientId;
-@dynamic incomingFlag;
-@dynamic retainedFlag;
-@dynamic commandType;
+@dynamic incomingFlagValue;
+@dynamic retainedFlagValue;
+@dynamic commandTypeValue;
 @dynamic qosLevel;
-@dynamic messageId;
+@dynamic messageIdValue;
 @dynamic topic;
 @dynamic data;
 @dynamic deadline;
+
+- (void)setCommandType:(MQTTCommandType)commandType
+{
+    self.commandTypeValue = @(commandType);
+}
+
+- (void)setRetainedFlag:(BOOL)retainedFlag
+{
+    self.retainedFlagValue = @(retainedFlag);
+}
+
+- (void)setIncomingFlag:(BOOL)incomingFlag
+{
+    self.incomingFlagValue = @(incomingFlag);
+}
+
+- (void)setMessageId:(UInt16)messageId
+{
+    self.messageIdValue = @(messageId);
+}
+
+- (MQTTCommandType)commandType
+{
+    return self.commandTypeValue.intValue;
+}
+
+- (BOOL)retainedFlag
+{
+    return self.retainedFlagValue.boolValue;
+}
+
+- (BOOL)incomingFlag
+{
+    return self.incomingFlagValue.boolValue;
+}
+
+- (UInt16)messageId
+{
+    return self.messageIdValue.unsignedShortValue;
+}
+
 
 @end
 
@@ -33,7 +85,7 @@
 #define MAX_MESSAGES 1024
 
 
-@interface MQTTPersistence()
+@interface MQTTPersistenceByCoreData()
 @property (strong, nonatomic) NSManagedObjectContext *managedObjectContext;
 @end
 
@@ -44,9 +96,13 @@ static NSPersistentStoreCoordinator *persistentStoreCoordinator;
 static unsigned long long fileSize;
 static unsigned long long fileSystemFreeSize;
 
-@implementation MQTTPersistence
+@implementation MQTTPersistenceByCoreData
 
-- (MQTTPersistence *)init {
+@synthesize maxSize;
+@synthesize maxMessages;
+@synthesize maxWindowSize;
+
+- (instancetype)init {
     self = [super init];
     self.persistent = PERSISTENT;
     self.maxSize = MAX_SIZE;
@@ -62,15 +118,15 @@ static unsigned long long fileSystemFreeSize;
     NSUInteger windowSize = 0;
     NSArray *flows = [self allFlowsforClientId:clientId
                                   incomingFlag:NO];
-    for (MQTTFlow *flow in flows) {
-        if ([flow.commandType intValue] != 0) {
+    for (id<MQTTFlow>flow in flows) {
+        if (flow.commandType != kMQTTCommandUnknown) {
             windowSize++;
         }
     }
     return windowSize;
 }
 
-- (MQTTFlow *)storeMessageForClientId:(NSString *)clientId
+- (id<MQTTFlow>)storeMessageForClientId:(NSString *)clientId
                                 topic:(NSString *)topic
                                  data:(NSData *)data
                            retainFlag:(BOOL)retainFlag
@@ -79,17 +135,17 @@ static unsigned long long fileSystemFreeSize;
                          incomingFlag:(BOOL)incomingFlag {
     if (([self allFlowsforClientId:clientId incomingFlag:incomingFlag].count <= self.maxMessages) &&
         (fileSize <= self.maxSize)) {
-        MQTTFlow *flow = [self createFlowforClientId:clientId
+        id<MQTTFlow>flow = [self createFlowforClientId:clientId
                                         incomingFlag:incomingFlag
                                            messageId:msgId];
         flow.topic = topic;
         flow.data = data;
-        flow.retainedFlag = @(retainFlag);
-        flow.qosLevel = @(qos);
+        flow.retainedFlag = retainFlag;
+        flow.qosLevel = qos;
         if ([self windowSize:clientId] > self.maxWindowSize) {
-            flow.commandType = @(0);
+            flow.commandType = kMQTTCommandUnknown;
         } else {
-            flow.commandType = @(MQTTPublish);
+            flow.commandType = MQTTPublish;
         }
         flow.deadline = [NSDate dateWithTimeIntervalSinceNow:0];
         [self sync];
@@ -99,7 +155,7 @@ static unsigned long long fileSystemFreeSize;
     }
 }
 
-- (void)deleteFlow:(MQTTFlow *)flow {
+- (void)deleteFlow:(id<MQTTFlow>)flow {
     [self.managedObjectContext performBlockAndWait:^{
         [self.managedObjectContext deleteObject:flow];
     }];
@@ -107,10 +163,10 @@ static unsigned long long fileSystemFreeSize;
 
 - (void)deleteAllFlowsForClientId:(NSString *)clientId {
     [self.managedObjectContext performBlockAndWait:^{
-        for (MQTTFlow *flow in [self allFlowsforClientId:clientId incomingFlag:TRUE]) {
+        for (id<MQTTFlow>flow in [self allFlowsforClientId:clientId incomingFlag:TRUE]) {
             [self.managedObjectContext deleteObject:flow];
         }
-        for (MQTTFlow *flow in [self allFlowsforClientId:clientId incomingFlag:FALSE]) {
+        for (id<MQTTFlow> flow in [self allFlowsforClientId:clientId incomingFlag:FALSE]) {
             [self.managedObjectContext deleteObject:flow];
         }
         [self sync];
@@ -136,9 +192,9 @@ static unsigned long long fileSystemFreeSize;
 
 - (NSArray *)allFlowsforClientId:(NSString *)clientId
                     incomingFlag:(BOOL)incomingFlag {
-    NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"MQTTFlow"];
+    NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"MQTTFlowCDObject"];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:
-                              @"clientId = %@ and incomingFlag = %@",
+                              @"clientId = %@ and incomingFlagValue = %@",
                               clientId,
                               @(incomingFlag)
                               ];
@@ -154,13 +210,13 @@ static unsigned long long fileSystemFreeSize;
     return flows;
 }
 
-- (MQTTFlow *)flowforClientId:(NSString *)clientId
+- (id<MQTTFlow>)flowforClientId:(NSString *)clientId
                  incomingFlag:(BOOL)incomingFlag
                     messageId:(UInt16)messageId {
-    MQTTFlow *flow = nil;
-    NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"MQTTFlow"];
+    id<MQTTFlow>flow = nil;
+    NSFetchRequest *fetchRequest = [NSFetchRequest fetchRequestWithEntityName:@"MQTTFlowCDObject"];
     fetchRequest.predicate = [NSPredicate predicateWithFormat:
-                              @"clientId = %@ and incomingFlag = %@ and messageId = %@",
+                              @"clientId = %@ and incomingFlagValue = %@ and messageIdValue = %@",
                               clientId,
                               @(incomingFlag),
                               @(messageId)
@@ -180,18 +236,18 @@ static unsigned long long fileSystemFreeSize;
     return flow;
 }
 
-- (MQTTFlow *)createFlowforClientId:(NSString *)clientId
+- (id<MQTTFlow>)createFlowforClientId:(NSString *)clientId
                        incomingFlag:(BOOL)incomingFlag
                           messageId:(UInt16)messageId {
-    MQTTFlow *flow = [self flowforClientId:clientId incomingFlag:incomingFlag messageId:messageId];
+    id<MQTTFlow>flow = [self flowforClientId:clientId incomingFlag:incomingFlag messageId:messageId];
     
     if (!flow) {
-        flow = [NSEntityDescription insertNewObjectForEntityForName:@"MQTTFlow"
+        flow = [NSEntityDescription insertNewObjectForEntityForName:@"MQTTFlowCDObject"
                                              inManagedObjectContext:self.managedObjectContext];
         
         flow.clientId = clientId;
-        flow.incomingFlag = @(incomingFlag);
-        flow.messageId = @(messageId);
+        flow.incomingFlag = incomingFlag;
+        flow.messageId = messageId;
         
     }
     return flow;
@@ -241,19 +297,19 @@ static unsigned long long fileSystemFreeSize;
         [properties addObject:attributeDescription];
         
         attributeDescription = [[NSAttributeDescription alloc] init];
-        attributeDescription.name = @"incomingFlag";
+        attributeDescription.name = @"incomingFlagValue";
         attributeDescription.attributeType = NSBooleanAttributeType;
         attributeDescription.attributeValueClassName = @"NSNumber";
         [properties addObject:attributeDescription];
         
         attributeDescription = [[NSAttributeDescription alloc] init];
-        attributeDescription.name = @"retainedFlag";
+        attributeDescription.name = @"retainedFlagValue";
         attributeDescription.attributeType = NSBooleanAttributeType;
         attributeDescription.attributeValueClassName = @"NSNumber";
         [properties addObject:attributeDescription];
         
         attributeDescription = [[NSAttributeDescription alloc] init];
-        attributeDescription.name = @"commandType";
+        attributeDescription.name = @"commandTypeValue";
         attributeDescription.attributeType = NSInteger16AttributeType;
         attributeDescription.attributeValueClassName = @"NSNumber";
         [properties addObject:attributeDescription];
@@ -265,7 +321,7 @@ static unsigned long long fileSystemFreeSize;
         [properties addObject:attributeDescription];
         
         attributeDescription = [[NSAttributeDescription alloc] init];
-        attributeDescription.name = @"messageId";
+        attributeDescription.name = @"messageIdValue";
         attributeDescription.attributeType = NSInteger32AttributeType;
         attributeDescription.attributeValueClassName = @"NSNumber";
         [properties addObject:attributeDescription];
@@ -289,8 +345,8 @@ static unsigned long long fileSystemFreeSize;
         [properties addObject:attributeDescription];
         
         NSEntityDescription *entityDescription = [[NSEntityDescription alloc] init];
-        entityDescription.name = @"MQTTFlow";
-        entityDescription.managedObjectClassName = @"MQTTFlow";
+        entityDescription.name = @"MQTTFlowCDObject";
+        entityDescription.managedObjectClassName = @"MQTTFlowCDObject";
         entityDescription.abstract = FALSE;
         entityDescription.properties = properties;
         

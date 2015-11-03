@@ -20,7 +20,7 @@
 #import <Foundation/Foundation.h>
 
 #import "MQTTMessage.h"
-#import "MQTTPersistence.h"
+#import "MQTTPersistenceProtocol.h"
 
 @class MQTTSession;
 @class MQTTSSLSecurityPolicy;
@@ -266,8 +266,6 @@ typedef NS_ENUM(NSInteger, MQTTSessionEvent) {
 /** Control MQTT persistence by setting the properties of persistence before connecting to an MQTT broker.
     The settings are specific to a clientId.
  
-    persistence.persistent = YES or NO (default) to establish file or in memory persistence. IMPORTANT: set immediately after creating the MQTTSession before calling any other method. Otherwise the default value (NO) will be used
-        for this session.
  
     persistence.maxWindowSize (a positive number, default is 16) to control the number of messages sent before waiting for acknowledgement in Qos 1 or 2. Additional messages are
         stored and transmitted later.
@@ -278,7 +276,7 @@ typedef NS_ENUM(NSInteger, MQTTSessionEvent) {
  
     Messages are deleted after they have been acknowledged.
 */
-@property (strong, nonatomic) MQTTPersistence *persistence;
+@property (strong, nonatomic) id <MQTTPersistenceProtocol> persistentCoordinator;
 
 /** for mqttio-OBJC backward compatibility */
 @property (strong) void (^connectionHandler)(MQTTSessionEvent event);
@@ -390,7 +388,8 @@ typedef NS_ENUM(NSInteger, MQTTSessionEvent) {
                    willRetainFlag:(BOOL)willRetainFlag
                     protocolLevel:(UInt8)protocolLevel
                           runLoop:(NSRunLoop *)runLoop
-                          forMode:(NSString *)runLoopMode;
+                          forMode:(NSString *)runLoopMode
+            persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator;
 
 /** alternative initializer
  @param clientId see initWithClientId for description.
@@ -423,7 +422,8 @@ typedef NS_ENUM(NSInteger, MQTTSessionEvent) {
                     protocolLevel:(UInt8)protocolLevel
                           runLoop:(NSRunLoop *)runLoop
                           forMode:(NSString *)runLoopMode
-                   securityPolicy:(MQTTSSLSecurityPolicy *) securityPolicy;
+                   securityPolicy:(MQTTSSLSecurityPolicy *) securityPolicy
+            persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator;
 
 /** initialises the MQTT session
 *
@@ -504,7 +504,8 @@ typedef NS_ENUM(NSInteger, MQTTSessionEvent) {
                           runLoop:(NSRunLoop *)runLoop
                           forMode:(NSString *)runLoopMode
                    securityPolicy:(MQTTSSLSecurityPolicy *) securityPolicy
-                     certificates:(NSArray *)certificates;
+                     certificates:(NSArray *)certificates
+            persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator;
 
 /**
 * for mqttio-OBJC backward compatibility

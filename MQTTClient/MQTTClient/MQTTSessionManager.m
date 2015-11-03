@@ -130,6 +130,7 @@
           willQos:(MQTTQosLevel)willQos
    willRetainFlag:(BOOL)willRetainFlag
      withClientId:(NSString *)clientId
+persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator
 {
   [self connectTo:host
                port:port
@@ -144,7 +145,8 @@
             willMsg:will
             willQos:willQos
      willRetainFlag:willRetainFlag
-       withClientId:clientId];
+       withClientId:clientId
+       persistentCoordinator:persistentCoordinator];
 }
 
 - (void)connectTo:(NSString *)host
@@ -161,6 +163,7 @@
           willQos:(MQTTQosLevel)willQos
    willRetainFlag:(BOOL)willRetainFlag
      withClientId:(NSString *)clientId
+persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator
 {
     [self connectTo:host
                port:port
@@ -177,7 +180,8 @@
      willRetainFlag:willRetainFlag
        withClientId:clientId
      securityPolicy:nil
-       certificates:nil];
+       certificates:nil
+    persistentCoordinator:persistentCoordinator];
 }
 
 - (void)connectTo:(NSString *)host
@@ -196,6 +200,8 @@
      withClientId:(NSString *)clientId
    securityPolicy:(MQTTSSLSecurityPolicy *)securityPolicy
      certificates:(NSArray *)certificates
+persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator
+     
 {
     BOOL shouldReconnect = self.session != nil;
     if (!self.session ||
@@ -245,12 +251,12 @@
                                                      runLoop:[NSRunLoop currentRunLoop]
                                                      forMode:NSDefaultRunLoopMode
                                               securityPolicy:securityPolicy
-                                                certificates:certificates];
+                                                certificates:certificates
+                                                persistentCoordinator:persistentCoordinator];
         
-        self.session.persistence.persistent = self.persistent;
-        self.session.persistence.maxWindowSize = self.maxWindowSize;
-        self.session.persistence.maxSize = self.maxSize;
-        self.session.persistence.maxMessages = self.maxMessages;
+        self.session.persistentCoordinator.maxWindowSize = self.maxWindowSize;
+        self.session.persistentCoordinator.maxSize = self.maxSize;
+        self.session.persistentCoordinator.maxMessages = self.maxMessages;
         
         self.session.delegate = self;
         self.reconnectTime = RECONNECT_TIMER;

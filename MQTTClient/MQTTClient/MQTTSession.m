@@ -80,36 +80,8 @@
                    willRetainFlag:NO
                     protocolLevel:4
                           runLoop:nil
-                          forMode:nil];
-}
-
-- (MQTTSession *)initWithClientId:(NSString *)clientId
-                         userName:(NSString *)userName
-                         password:(NSString *)password
-                        keepAlive:(UInt16)keepAliveInterval
-                     cleanSession:(BOOL)cleanSessionFlag
-                             will:(BOOL)willFlag
-                        willTopic:(NSString *)willTopic
-                          willMsg:(NSData *)willMsg
-                          willQoS:(MQTTQosLevel)willQoS
-                   willRetainFlag:(BOOL)willRetainFlag
-                    protocolLevel:(UInt8)protocolLevel
-                          runLoop:(NSRunLoop *)runLoop
-                          forMode:(NSString *)runLoopMode {
-    return [self initWithClientId:clientId
-                         userName:userName
-                         password:password
-                        keepAlive:keepAliveInterval
-                     cleanSession:cleanSessionFlag
-                             will:willFlag
-                        willTopic:willTopic
-                          willMsg:willMsg
-                          willQoS:willQoS
-                   willRetainFlag:willRetainFlag
-                    protocolLevel:protocolLevel
-                          runLoop:runLoop
-                          forMode:runLoopMode
-                   securityPolicy:nil];
+                          forMode:nil
+            persistentCoordinator:nil];
 }
 
 - (MQTTSession *)initWithClientId:(NSString *)clientId
@@ -125,7 +97,41 @@
                     protocolLevel:(UInt8)protocolLevel
                           runLoop:(NSRunLoop *)runLoop
                           forMode:(NSString *)runLoopMode
-                   securityPolicy:(MQTTSSLSecurityPolicy *) securityPolicy {
+            persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator 
+{
+    return [self initWithClientId:clientId
+                         userName:userName
+                         password:password
+                        keepAlive:keepAliveInterval
+                     cleanSession:cleanSessionFlag
+                             will:willFlag
+                        willTopic:willTopic
+                          willMsg:willMsg
+                          willQoS:willQoS
+                   willRetainFlag:willRetainFlag
+                    protocolLevel:protocolLevel
+                          runLoop:runLoop
+                          forMode:runLoopMode
+                   securityPolicy:nil
+            persistentCoordinator:persistentCoordinator];
+}
+
+- (MQTTSession *)initWithClientId:(NSString *)clientId
+                         userName:(NSString *)userName
+                         password:(NSString *)password
+                        keepAlive:(UInt16)keepAliveInterval
+                     cleanSession:(BOOL)cleanSessionFlag
+                             will:(BOOL)willFlag
+                        willTopic:(NSString *)willTopic
+                          willMsg:(NSData *)willMsg
+                          willQoS:(MQTTQosLevel)willQoS
+                   willRetainFlag:(BOOL)willRetainFlag
+                    protocolLevel:(UInt8)protocolLevel
+                          runLoop:(NSRunLoop *)runLoop
+                          forMode:(NSString *)runLoopMode
+                   securityPolicy:(MQTTSSLSecurityPolicy *) securityPolicy
+            persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator
+{
     return [self initWithClientId:clientId
                          userName:userName
                          password:password
@@ -140,7 +146,8 @@
                           runLoop:runLoop
                           forMode:runLoopMode
                    securityPolicy:securityPolicy
-                     certificates:nil];
+                     certificates:nil 
+            persistentCoordinator:persistentCoordinator];
     
 }
 
@@ -158,7 +165,8 @@
                           runLoop:(NSRunLoop *)runLoop
                           forMode:(NSString *)runLoopMode
                    securityPolicy:(MQTTSSLSecurityPolicy *) securityPolicy
-                     certificates:(NSArray *)certificates {
+                     certificates:(NSArray *)certificates 
+            persistentCoordinator:(id<MQTTPersistenceProtocol>)persistentCoordinator {
     self = [super init];
     if (DEBUGSESS) NSLog(@"MQTTClient %s %s", __DATE__, __TIME__);
     
@@ -187,7 +195,7 @@
     self.certificates = certificates;
     
     self.txMsgId = 1;
-    self.persistence = [[MQTTPersistence alloc] init];
+    self.persistentCoordinator = persistentCoordinator;
     return self;
 }
 
@@ -262,7 +270,8 @@
                    willRetainFlag:FALSE
                     protocolLevel:4
                           runLoop:nil
-                          forMode:nil];
+                          forMode:nil
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -281,7 +290,8 @@
                    willRetainFlag:FALSE
                     protocolLevel:4
                           runLoop:theRunLoop
-                          forMode:theRunLoopMode];
+                          forMode:theRunLoopMode
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -300,7 +310,8 @@
                    willRetainFlag:FALSE
                     protocolLevel:4
                           runLoop:nil
-                          forMode:nil];
+                          forMode:nil
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -321,7 +332,8 @@
                    willRetainFlag:FALSE
                     protocolLevel:4
                           runLoop:theRunLoop
-                          forMode:theRunLoopMode];
+                          forMode:theRunLoopMode
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -342,7 +354,8 @@
                    willRetainFlag:FALSE
                     protocolLevel:4
                           runLoop:nil
-                          forMode:nil];
+                          forMode:nil
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -365,7 +378,8 @@
                    willRetainFlag:FALSE
                     protocolLevel:4
                           runLoop:theRunLoop
-                          forMode:theMode];
+                          forMode:theMode
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -390,7 +404,8 @@
                    willRetainFlag:willRetainFlag
                     protocolLevel:4
                           runLoop:nil
-                          forMode:nil];
+                          forMode:nil
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -417,7 +432,8 @@
                    willRetainFlag:willRetainFlag
                     protocolLevel:4
                           runLoop:theRunLoop
-                          forMode:theRunLoopMode];
+                          forMode:theRunLoopMode
+            persistentCoordinator:nil];
 }
 
 - (id)initWithClientId:(NSString*)theClientId
@@ -439,7 +455,8 @@
                    willRetainFlag:FALSE
                     protocolLevel:4
                           runLoop:theRunLoop
-                          forMode:theRunLoopMode];
+                          forMode:theRunLoopMode
+            persistentCoordinator:nil];
 }
 
 - (void)connectToHost:(NSString*)host port:(UInt32)port usingSSL:(BOOL)usingSSL
@@ -453,7 +470,7 @@
     }
     
     if (self.cleanSessionFlag) {
-        [self.persistence deleteAllFlowsForClientId:self.clientId];
+        [self.persistentCoordinator deleteAllFlowsForClientId:self.clientId];
     }
     [self tell];
     
@@ -727,7 +744,7 @@
                                                 retainFlag:retainFlag
                                                    dupFlag:FALSE];
     if (qos) {
-        MQTTFlow *flow = [self.persistence storeMessageForClientId:self.clientId
+        id<MQTTFlow> flow = [self.persistentCoordinator storeMessageForClientId:self.clientId
                                                              topic:topic
                                                               data:data
                                                         retainFlag:retainFlag
@@ -740,7 +757,7 @@
             msgId = 0;
         } else {
             [self tell];
-            if ([self.persistence windowSize:self.clientId] <= self.persistence.maxWindowSize) {
+            if ([self.persistentCoordinator windowSize:self.clientId] <= self.persistentCoordinator.maxWindowSize) {
                 if ([self send:msg]) {
                     flow.deadline = [NSDate dateWithTimeIntervalSinceNow:DUPTIMEOUT];
                 }
@@ -904,30 +921,30 @@
 - (void)checkTxFlows {
     NSUInteger windowSize;
     MQTTMessage *message;
-    NSArray *flows = [self.persistence allFlowsforClientId:self.clientId
+    NSArray *flows = [self.persistentCoordinator allFlowsforClientId:self.clientId
                                               incomingFlag:NO];
     windowSize = 0;
     message = nil;
     
-    for (MQTTFlow *flow in flows) {
-        if ([flow.commandType intValue] != 0) {
+    for (id<MQTTFlow> flow in flows) {
+        if (flow.commandType != kMQTTCommandUnknown) {
             windowSize++;
         }
     }
-    for (MQTTFlow *flow in flows) {
-        if (DEBUGSESS)  NSLog(@"%@ %@ flow %@ %@ %@", self, self.clientId, flow.deadline, flow.commandType, flow.messageId);
+    for (id<MQTTFlow> flow in flows) {
+        if (DEBUGSESS)  NSLog(@"%@ %@ flow %@ %d %d", self, self.clientId, flow.deadline, flow.commandType, flow.messageId);
         if ([flow.deadline compare:[NSDate date]] == NSOrderedAscending) {
-            switch ([flow.commandType intValue]) {
+            switch (flow.commandType) {
                 case 0:
-                    if (windowSize <= self.persistence.maxWindowSize) {
+                    if (windowSize <= self.persistentCoordinator.maxWindowSize) {
                         message = [MQTTMessage publishMessageWithData:flow.data
                                                               onTopic:flow.topic
-                                                                  qos:[flow.qosLevel intValue]
-                                                                msgId:[flow.messageId intValue]
-                                                           retainFlag:[flow.retainedFlag boolValue]
+                                                                  qos:flow.qosLevel
+                                                                msgId:flow.messageId
+                                                           retainFlag:flow.retainedFlag
                                                               dupFlag:NO];
                         [self send:message];
-                        flow.commandType = @(MQTTPublish);
+                        flow.commandType = MQTTPublish;
                         flow.deadline = [NSDate dateWithTimeIntervalSinceNow:DUPTIMEOUT];
                         windowSize++;
                     }
@@ -935,15 +952,15 @@
                 case MQTTPublish:
                     message = [MQTTMessage publishMessageWithData:flow.data
                                                           onTopic:flow.topic
-                                                              qos:[flow.qosLevel intValue]
-                                                            msgId:[flow.messageId intValue]
-                                                       retainFlag:[flow.retainedFlag boolValue]
+                                                              qos:flow.qosLevel
+                                                            msgId:flow.messageId
+                                                       retainFlag:flow.retainedFlag
                                                           dupFlag:YES];
                     [self send:message];
                     flow.deadline = [NSDate dateWithTimeIntervalSinceNow:DUPTIMEOUT];
                     break;
                 case MQTTPubrel:
-                    message = [MQTTMessage pubrelMessageWithMessageId:[flow.messageId intValue]];
+                    message = [MQTTMessage pubrelMessageWithMessageId:flow.messageId];
                     [self send:message];
                     flow.deadline = [NSDate dateWithTimeIntervalSinceNow:DUPTIMEOUT];
                     break;
@@ -952,7 +969,7 @@
             }
         }
     }
-    [self.persistence sync];
+    [self.persistentCoordinator sync];
 }
 
 - (void)encoder:(MQTTEncoder*)sender handleEvent:(MQTTEncoderEvent)eventCode error:(NSError *)error
@@ -1249,7 +1266,7 @@
                 }
                 return;
             } else {
-                if (![self.persistence storeMessageForClientId:self.clientId
+                if (![self.persistentCoordinator storeMessageForClientId:self.clientId
                                                          topic:topic
                                                           data:data
                                                     retainFlag:msg.retainFlag
@@ -1272,13 +1289,13 @@
         UInt8 const *bytes = [[msg data] bytes];
         UInt16 messageId = (256 * bytes[0] + bytes[1]);
         msg.mid = messageId;
-        MQTTFlow *flow = [self.persistence flowforClientId:self.clientId
+        id <MQTTFlow> flow = [self.persistentCoordinator flowforClientId:self.clientId
                                               incomingFlag:NO
                                                  messageId:messageId];
         if (flow) {
-            if ([flow.commandType intValue] == MQTTPublish && [flow.qosLevel intValue] == MQTTQosLevelAtLeastOnce) {
-                [self.persistence deleteFlow:flow];
-                [self.persistence sync];
+            if (flow.commandType == MQTTPublish && flow.qosLevel == MQTTQosLevelAtLeastOnce) {
+                [self.persistentCoordinator deleteFlow:flow];
+                [self.persistentCoordinator sync];
                 [self tell];
                 if ([self.delegate respondsToSelector:@selector(messageDelivered:msgID:)]) {
                     [self.delegate messageDelivered:self msgID:messageId];
@@ -1332,16 +1349,16 @@
         UInt16 messageId = (256 * bytes[0] + bytes[1]);
         msg.mid = messageId;
         MQTTMessage *pubrelmsg = [MQTTMessage pubrelMessageWithMessageId:messageId];
-        MQTTFlow *flow = [self.persistence flowforClientId:self.clientId
+        id <MQTTFlow> flow = [self.persistentCoordinator flowforClientId:self.clientId
                                               incomingFlag:NO
                                                  messageId:messageId];
         if (flow) {
-            if ([flow.commandType intValue] == MQTTPublish && [flow.qosLevel intValue] == MQTTQosLevelExactlyOnce) {
-                flow.commandType = @(MQTTPubrel);
+            if (flow.commandType == MQTTPublish && flow.qosLevel == MQTTQosLevelExactlyOnce) {
+                flow.commandType = MQTTPubrel;
                 flow.topic = nil;
                 flow.data = nil;
                 flow.deadline = [NSDate dateWithTimeIntervalSinceNow:DUPTIMEOUT];
-                [self.persistence sync];
+                [self.persistentCoordinator sync];
             }
         }
         [self send:pubrelmsg];
@@ -1353,7 +1370,7 @@
     if ([[msg data] length] == 2) {
         UInt8 const *bytes = [[msg data] bytes];
         UInt16 messageId = (256 * bytes[0] + bytes[1]);
-        MQTTFlow *flow = [self.persistence flowforClientId:self.clientId
+        id <MQTTFlow> flow = [self.persistentCoordinator flowforClientId:self.clientId
                                               incomingFlag:YES
                                                  messageId:messageId];
         if (flow) {
@@ -1362,26 +1379,26 @@
                 [self.delegate newMessage:self
                                      data:flow.data
                                   onTopic:flow.topic
-                                      qos:[flow.qosLevel intValue]
-                                 retained:[flow.retainedFlag boolValue]
-                                      mid:[flow.messageId intValue]
+                                      qos:flow.qosLevel
+                                 retained:flow.retainedFlag
+                                      mid:flow.messageId
                  ];
             }
             if ([self.delegate respondsToSelector:@selector(newMessageWithFeedback:data:onTopic:qos:retained:mid:)]) {
                 processed = [self.delegate newMessageWithFeedback:self
                                                              data:flow.data
                                                           onTopic:flow.topic
-                                                              qos:[flow.qosLevel intValue]
-                                                         retained:[flow.retainedFlag boolValue]
-                                                              mid:[flow.messageId intValue]
+                                                              qos:flow.qosLevel
+                                                         retained:flow.retainedFlag
+                                                              mid:flow.messageId
                              ];
             }
             if(self.messageHandler){
                 self.messageHandler(flow.data, flow.topic);
             }
             if (processed) {
-                [self.persistence deleteFlow:flow];
-                [self.persistence sync];
+                [self.persistentCoordinator deleteFlow:flow];
+                [self.persistentCoordinator sync];
                 [self tell];
                 [self send:[MQTTMessage pubcompMessageWithMessageId:messageId]];
             }
@@ -1393,12 +1410,12 @@
     if ([[msg data] length] == 2) {
         UInt8 const *bytes = [[msg data] bytes];
         UInt16 messageId = (256 * bytes[0] + bytes[1]);
-        MQTTFlow *flow = [self.persistence flowforClientId:self.clientId
+        id<MQTTFlow> flow = [self.persistentCoordinator flowforClientId:self.clientId
                                               incomingFlag:NO
                                                  messageId:messageId];
-        if (flow && [flow.commandType intValue] == MQTTPubrel) {
-            [self.persistence deleteFlow:flow];
-            [self.persistence sync];
+        if (flow && flow.commandType == MQTTPubrel) {
+            [self.persistentCoordinator deleteFlow:flow];
+            [self.persistentCoordinator sync];
             [self tell];
             if ([self.delegate respondsToSelector:@selector(messageDelivered:msgID:)]) {
                 [self.delegate messageDelivered:self msgID:messageId];
@@ -1453,7 +1470,7 @@
 
 - (UInt16)nextMsgId {
     self.txMsgId++;
-    while (self.txMsgId == 0 || [self.persistence flowforClientId:self.clientId
+    while (self.txMsgId == 0 || [self.persistentCoordinator flowforClientId:self.clientId
                                                      incomingFlag:NO
                                                         messageId:self.txMsgId] != nil) {
         self.txMsgId++;
@@ -1462,9 +1479,9 @@
 }
 
 - (void)tell {
-    NSUInteger incoming = [self.persistence allFlowsforClientId:self.clientId
+    NSUInteger incoming = [self.persistentCoordinator allFlowsforClientId:self.clientId
                                                    incomingFlag:YES].count;
-    NSUInteger outflowing = [self.persistence allFlowsforClientId:self.clientId
+    NSUInteger outflowing = [self.persistentCoordinator allFlowsforClientId:self.clientId
                                                      incomingFlag:NO].count;
     if ([self.delegate respondsToSelector:@selector(buffered:flowingIn:flowingOut:)]) {
         [self.delegate buffered:self

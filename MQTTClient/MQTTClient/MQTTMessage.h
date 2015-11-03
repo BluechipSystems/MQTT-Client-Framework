@@ -27,6 +27,7 @@
 @property (nonatomic)    UInt16   mid;
 
 typedef NS_ENUM(UInt8, MQTTCommandType) {
+    kMQTTCommandUnknown = 0,
     MQTTConnect = 1,
     MQTTConnack = 2,
     MQTTPublish = 3,

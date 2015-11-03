@@ -1,36 +1,38 @@
 //
-//  MQTTPersistence.h
+//  MQTTPersistenceProtocol.h
 //  MQTTClient
 //
-//  Created by Christoph Krey on 22.03.15.
-//  Copyright (c) 2015 Christoph Krey. All rights reserved.
+//  Created by Dmytro Hubskyi on 11/3/15.
+//  Copyright © 2015 Christoph Krey. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-#import <CoreData/CoreData.h>
 #import "MQTTMessage.h"
 
-@interface MQTTFlow : NSManagedObject
+@protocol MQTTFlow <NSObject>
+
 @property (strong, nonatomic) NSString *clientId;
-@property (strong, nonatomic) NSNumber *incomingFlag;
-@property (strong, nonatomic) NSNumber *retainedFlag;
-@property (strong, nonatomic) NSNumber *commandType;
-@property (strong, nonatomic) NSNumber *qosLevel;
-@property (strong, nonatomic) NSNumber *messageId;
-@property (strong, nonatomic) NSString *topic;
-@property (strong, nonatomic) NSData *data;
-@property (strong, nonatomic) NSDate *deadline;
+@property (assign, nonatomic) BOOL incomingFlag;
+@property (assign, nonatomic) BOOL retainedFlag;
+@property (assign, nonatomic) MQTTCommandType commandType;
+@property (assign, nonatomic) MQTTQosLevel qosLevel;
+@property (assign, nonatomic) UInt16 messageId;
+@property (copy, nonatomic)   NSString *topic;
+@property (copy, nonatomic)   NSData *data;
+@property (copy, nonatomic)   NSDate *deadline;
 
 @end
 
-@interface MQTTPersistence : NSObject
-@property (nonatomic) BOOL persistent;
+@protocol MQTTPersistenceProtocol <NSObject>
+
 @property (nonatomic) NSUInteger maxWindowSize;
 @property (nonatomic) NSUInteger maxMessages;
 @property (nonatomic) NSUInteger maxSize;
 
+
 - (NSUInteger)windowSize:(NSString *)clientId;
-- (MQTTFlow *)storeMessageForClientId:(NSString *)clientId
+
+- (id<MQTTFlow>)storeMessageForClientId:(NSString *)clientId
                                 topic:(NSString *)topic
                                  data:(NSData *)data
                            retainFlag:(BOOL)retainFlag
@@ -38,17 +40,21 @@
                                 msgId:(UInt16)msgId
                          incomingFlag:(BOOL)incomingFlag;
 
-- (void)deleteFlow:(MQTTFlow *)flow;
+- (void)deleteFlow:(id<MQTTFlow>)flow;
+
 - (void)deleteAllFlowsForClientId:(NSString *)clientId;
-- (NSArray *)allFlowsforClientId:(NSString *)clientId
+
+- (NSArray <MQTTFlow> *)allFlowsforClientId:(NSString *)clientId
                     incomingFlag:(BOOL)incomingFlag;
-- (MQTTFlow *)flowforClientId:(NSString *)clientId
+                    
+- (id<MQTTFlow>)flowforClientId:(NSString *)clientId
                  incomingFlag:(BOOL)incomingFlag
                     messageId:(UInt16)messageId;
 
-- (MQTTFlow *)createFlowforClientId:(NSString *)clientId
+- (id<MQTTFlow>)createFlowforClientId:(NSString *)clientId
                        incomingFlag:(BOOL)incomingFlag
                           messageId:(UInt16)messageId;
 - (void)sync;
+
 
 @end
