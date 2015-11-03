@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "MQTTClient"
-  s.version      = "0.3.4"
+  s.version      = "0.3.4.1"
   s.summary      = "iOS, OSX and tvOS native ObjectiveC MQTT Framework"
   s.homepage     = "https://github.com/Mitrodan/MQTT-Client-Framework"
   s.license      = { :type => "MIT", :file => "LICENSE" }
